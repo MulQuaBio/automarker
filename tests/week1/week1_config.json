@@ -1,0 +1,56 @@
+{
+  "name": "week1",
+  "tests": {
+    "UnixPrac1.txt": {
+      "testfile": "test_UnixPrac1.py",
+      "required": 1,
+      "timeout": 5
+    },
+    "boilerplate.sh": {
+      "testfile": "test_boilerplate.py",
+      "required": 1,
+      "timeout": 5
+    },
+    "MyExampleScript.sh": {
+      "testfile": "test_MyExampleScript.py",
+      "required": 1,
+      "timeout": 5
+    },
+    "variables.sh": {
+      "testfile": "test_variables.py",
+      "required": 1,
+      "timeout": 0.2
+    },
+    "countlines.sh": {
+      "testfile": "test_countlines.py",
+      "required": 1,
+      "timeout": 5
+    },
+    "ConcatenateTwoFiles.sh": {
+      "testfile": "test_ConcatenateTwoFiles.py",
+      "required": 1,
+      "timeout": 5
+    },
+    "tabtocsv.sh": {
+      "testfile": "test_tabtocsv.py",
+      "required": 1,
+      "timeout": 5
+    },
+    "csvtospace.sh": {
+      "testfile": "test_csvtospace.py",
+      "required": 1,
+      "timeout": 5
+    },
+    "tiff2png.sh": {
+      "testfile": "test_tiff2png.py",
+      "required": 1,
+      "timeout": 5
+    },
+    "CompileLatex.sh": {
+      "testfile": "test_compilelatex.py",
+      "required": 1,
+      "timeout": 5
+    }
+  },
+  "extra_files": ["FirstBiblio.bib", "FirstExample.tex"]
+}
