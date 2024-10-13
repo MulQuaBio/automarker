@@ -275,6 +275,23 @@ Within tests, each file to be tested should have an entry keyed by the name of t
 
 The marking runner also outputs a json file into the results folder. This file contains a structured report of everything encountered when marking the work of the student.
 
+## Useful data locations
+There are some common variables that will be passed into every test. Here are the most useful ones for writing tests:
+
+- `studentspec["folder"]` - The student's home folder
+- `modulespec["folder"]` - The name of the folder for this module's work
+- `modulespec["codeloc"]` - The student's code folder (within the module folder)
+- `modulespec["dataloc"]` - The student's data folder (within the module folder)
+- `modulespec["resultsloc"]` - The student's results folder (within the module folder)
+
+Often it is worthwhile setting these up as full paths like so:
+```python
+moduledirpath = os.path.join(filelocation, studentspec["folder"], modulespec["folder"])
+codedirpath = os.path.join(moduledirpath, modulespec["codeloc"])
+datadirpath = os.path.join(moduledirpath, modulespec["dataloc"])
+resultsdirpath = os.path.join(moduledirpath, modulespec["resultsloc"])
+```
+
 ## TODO
 - Add a first attempt at a json -> markdown parsing
 - Github auto pull and auto feedback push
