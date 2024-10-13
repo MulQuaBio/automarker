@@ -36,7 +36,6 @@ positional arguments:
 options:
   -h, --help         show this help message and exit
   -d, --debug        enable debugging information
-                     currently unused)
 ```
 
 For example a typical run may look something like
