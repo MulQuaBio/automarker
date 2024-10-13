@@ -28,7 +28,7 @@ usage: mark.py [-h] [-d] [students] [config] [fileloc] [outputloc]
 Mark a set of files according to a grading structure.
 
 positional arguments:
-  students           A folder containing files to mark.
+  students           A json file specifying students to mark.
   config             A json file containing the overarching marking configuration.
   fileloc            The folder containing student work.
   outputloc          The folder within which to write output and logs.
