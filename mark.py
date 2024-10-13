@@ -373,8 +373,6 @@ def main(args):
         json.dump(overall_results_dict, f)
     return overall_results_dict
 
-# week 1 expectedFiles = ['CompileLatex.sh', 'tiff2png.sh']
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mark a set of files according to a grading structure.")
     parser.add_argument("students", help="A folder containing files to mark.", nargs="?", const="data/test_students.json", default="data/test_students.json")
