@@ -230,6 +230,11 @@ def repochecker(fileloc, studentfolder):
 
     abs_studentfolder = os.path.join(fileloc, studentfolder)
 
+    if not os.path.isdir(abs_studentfolder):
+        logger.critical("Repo missing entirely!")
+        deductions = {"value": 100, "reasons": ["missing_repo"]}
+        return True, deductions
+
     # Check for README
     modulecontents_files = []
     # Find module-level files and directories
@@ -267,7 +272,7 @@ def repochecker(fileloc, studentfolder):
         deductions["value"] += 1 * len(largefiles)
         deductions["reasons"].append("large_files")
 
-    return deductions
+    return False, deductions
 
 
 def main(args):
@@ -314,10 +319,14 @@ def main(args):
         logger.addHandler(sfh)
 
         logger.info("Marking {}...".format(studentspec["name"]))
-        repo_results = {"deductions": repochecker(args["fileloc"], studentspec["folder"])}
+        repo_results_raw = repochecker(args["fileloc"], studentspec["folder"])
+        repo_results = {"deductions": repo_results_raw[1]}
         student_results_dict = {"repo_results": repo_results}
 
         for moduleid, modulespec in config.items():
+            if repo_results_raw[0]:
+                # Just skip through if the repo has a catastrophic error.
+                continue
             logger.info("  Marking {}...".format(moduleid))
             module_results_dict = {}
 
