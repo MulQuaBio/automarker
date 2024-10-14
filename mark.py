@@ -301,11 +301,11 @@ def main(args):
 
     # Check wd
     logger.debug(os.getcwd())
-    fileloc = sys.argv[0]
+    fileloc = os.path.dirname(os.path.abspath(__file__))
+    # logger.debug(fileloc)
+    # properloc = os.path.split(fileloc)[0]
     logger.debug(fileloc)
-    properloc = os.path.split(fileloc)[0]
-    logger.debug(properloc)
-    os.chdir(properloc)
+    os.chdir(fileloc)
     logger.debug(os.getcwd())
 
     logger.info("Loading JSON files...")
