@@ -108,10 +108,8 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
             deductions["reasons"].append("run_error")
 
         elif all([v[1] != "0" for v in verify_out]):
-
             logger.warning("{} gave possibly incorrect output. -0.5 points".format(targetfile))
-
-            logger.debug("One of these should have been a 0 with no error:\n{}".format("\n".join([f'{v[0]}: {v[1]}' for v in verify_out])))
+            logger.info("One of these should have been a 0 with no error:\n{}".format("\n".join([f'{v[0]}: {v[1]}' for v in verify_out])))
             deductions["value"] += 0.5
             deductions["reasons"].append("result_error")
 
