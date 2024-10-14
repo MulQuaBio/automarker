@@ -299,6 +299,15 @@ def main(args):
         logger.debug("Args: \n%s", pformat(args))
         logger.debug(ohhimark())
 
+    # Check wd
+    logger.debug(os.getcwd())
+    fileloc = sys.argv[0]
+    logger.debug(fileloc)
+    properloc = os.path.split(fileloc)[0]
+    logger.debug(properloc)
+    os.chdir(properloc)
+    logger.debug(os.getcwd())
+
     logger.info("Loading JSON files...")
 
     logger.debug("Loading students...")
