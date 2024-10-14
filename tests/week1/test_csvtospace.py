@@ -75,6 +75,9 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
 
         # Using grep instead to verify number of tabs (should be 0)
         verify_out = []
+        char_arg = 'str=\",\"'
+        count_processor = "'{ c += gsub(str, str) } END { print c }'"
+        final_verify_str = f"awk -v {char_arg} {count_processor}"
         for x in [
             f"{modulespec['dataloc']}/testcsv.txt",
             f"{modulespec['dataloc']}/testcsv.csv.txt",
@@ -83,11 +86,12 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
             f"{modulespec['codeloc']}/testcsv.txt",
             f"{modulespec['codeloc']}/testcsv.csv.txt"
         ]:
-            verify_out.append((x, subprocess.run(f"grep -o -P ',' ../{x}  | wc -l",
+            v = subprocess.run(f"{final_verify_str} ../{x}",
                                         cwd=codedirpath, shell=True,
                                         text=True,
                                         timeout=timeout,
-                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.strip()))
+                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.strip()
+            verify_out.append((x, v))
     except subprocess.TimeoutExpired as e:
         logger.critical("MARKER ERROR - {} verification timed out!".format(targetfile))
 
