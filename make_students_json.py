@@ -61,7 +61,7 @@ if __name__ == '__main__':
     parser.add_argument("dir", help="A folder containing student folders to mark.", nargs="?",
                         const="data", default="data")
     parser.add_argument("outfile", help="A json file containing the overarching marking configuration.", nargs="?",
-                        const="data/test_students_auto.json", default="data/test_students_auto.json")
+                        const="data/students.json", default="data/students.json")
 
     arglist = parser.parse_args()
     arglist = vars(arglist)

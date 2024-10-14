@@ -390,8 +390,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Mark a set of files according to a grading structure.")
-    parser.add_argument("students", help="A json file specifying students to mark.", nargs="?", const="data/test_students.json", default="data/test_students.json")
-    parser.add_argument("config", help="A json file containing the overarching marking configuration.", nargs="?", const="data/test_config.json", default="data/test_config.json")
+    parser.add_argument("students", help="A json file specifying students to mark.", nargs="?", const="data/students.json", default="data/students.json")
+    parser.add_argument("config", help="A json file containing the overarching marking configuration.", nargs="?", const="data/config.json", default="data/config.json")
     parser.add_argument("fileloc", help="The folder containing student work.", nargs="?",
                         const="data", default="data")
     parser.add_argument("outputloc", help="The folder within which to write output and logs.", nargs="?",

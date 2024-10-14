@@ -31,7 +31,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Create a basic student config json from a directory.")
     parser.add_argument("students", help="A json file containing the student configuration.", nargs="?",
-                        const="../data/test_students_auto_fromcsv.json", default="../data/test_students_auto_fromcsv.json")
+                        const="../data/test_students_auto_fromcsv.json", default="../data/students.json")
     parser.add_argument("datafolder", help="The folder to save data in.", nargs="?",
                         const="../data", default="../data")
 

@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser.add_argument("csv", help="A csv file containing student data.", nargs="?",
                         const="../data/students.csv", default="../data/students.csv")
     parser.add_argument("outfile", help="A json file containing the overarching marking configuration.", nargs="?",
-                        const="../data/test_students_auto_fromcsv.json", default="../data/test_students_auto_fromcsv.json")
+                        const="../data/students.json", default="../data/students.json")
 
     arglist = parser.parse_args()
     arglist = vars(arglist)
