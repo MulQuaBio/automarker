@@ -39,7 +39,7 @@ def main(args):
     print(f"Writing {len(students_final)} student/s to {args['outfile']}")
 
     with open(args["outfile"], "w") as f:
-        json.dump(students_final, f)
+        json.dump(dict(students=students_final), f)
 
     return 0
 

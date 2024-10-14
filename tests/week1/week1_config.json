@@ -9,7 +9,7 @@
     "boilerplate.sh": {
       "testfile": "test_boilerplate.py",
       "required": 1,
-      "timeout": 5
+      "timeout": 1
     },
     "MyExampleScript.sh": {
       "testfile": "test_MyExampleScript.py",

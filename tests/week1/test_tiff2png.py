@@ -61,13 +61,16 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
         b'bWx1YwAAAAAAAAABAAAADGVuVVMAAAAIAAAAHABHAEkATQBQbWx1YwAAAAAAAAABAAAADGVuVVMAAAAIAAAAHABzAFIARwBCQmFja2dy'
         b'b3VuZAA=')
 
+    logger.info("Writing test tif file")
     with open(os.path.join(codedirpath, "test.tif"), "wb") as f:
         f.write(b64decode(tifstr))
 
     # Run script
     starttime = datetime.now()
     try:
-        run_result = subprocess.run(f"bash {targetfile} test.tif", cwd=codedirpath, shell=True, text=True, timeout = timeout,
+        teststr = f"bash {targetfile} test.tif"
+        logger.info("Running {} using following command: {}".format(targetfile, teststr))
+        run_result = subprocess.run(teststr, cwd=codedirpath, shell=True, text=True, timeout = timeout,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except subprocess.TimeoutExpired as e:
         timedout = True
@@ -98,7 +101,7 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
     else:
         if run_result.returncode != 0:
             logger.critical("{} errored! -1 point".format(targetfile))
-            logger.debug("Error:\n{}".format(run_result.stdout))
+            logger.critical("Error:\n{}".format(run_result.stdout))
             deductions["value"] += 1
             deductions["reasons"].append("run_error")
 

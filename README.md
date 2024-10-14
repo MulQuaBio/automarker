@@ -17,6 +17,19 @@ Currently, this package has minimal dependencies. However the presently required
 
 > Note: you can get a list of currently imported python packages within the folder by running `python tools/find_deps.py` from the root dir. This specifically excludes dependencies in students' work.
 
+## Quickstart
+The following process should be run when setting up to mark a new group of students:
+
+1. Set up `students.json` file.
+2. Set up `config.json` file.
+3. Run `tools/github_interact.py` to download all repos (removing them if they existed previously).
+4. Run `mark.py` to perform marking.
+5. Output will be present in the `results` directory.
+
+When marking a week for an already-setup set of students, just the last three commands are required.
+
+> Tip: Most interactable scripts will respond to the `-h` flag if you would like to see which arguments they take. If it's not listed here, that will be your best bet.
+
 ## Structure
 
 ### Main marking script - `mark.py`

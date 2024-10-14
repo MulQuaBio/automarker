@@ -51,7 +51,9 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
     starttime = datetime.now()
     try:
         # run
-        run_result = subprocess.run(f"bash {targetfile} ../{modulespec['dataloc']}/testcsv.csv", cwd=codedirpath, shell=True, text=True, timeout = timeout,
+        teststr = f"bash {targetfile} ../{modulespec['dataloc']}/testcsv.csv"
+        logger.info("Running {} using following command: {}".format(targetfile, teststr))
+        run_result = subprocess.run(teststr, cwd=codedirpath, shell=True, text=True, timeout = timeout,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except subprocess.TimeoutExpired as e:
         timedout = True
@@ -72,14 +74,20 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
         #                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         # Using grep instead to verify number of tabs (should be 0)
-        verify_out = subprocess.run(f"grep -o -P ',' ../{modulespec['dataloc']}/testcsv.txt  | wc -l", cwd=codedirpath, shell=True,
-                                    text=True,
-                                    timeout=timeout,
-                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        verify_out_alt = subprocess.run(f" grep -o -P ',' ../{modulespec['dataloc']}/testcsv.csv.txt  | wc -l", cwd=codedirpath,
-                                        shell=True, text=True,
+        verify_out = []
+        for x in [
+            f"{modulespec['dataloc']}/testcsv.txt",
+            f"{modulespec['dataloc']}/testcsv.csv.txt",
+            f"{modulespec['resultsloc']}/testcsv.txt",
+            f"{modulespec['resultsloc']}/testcsv.csv.txt",
+            f"{modulespec['codeloc']}/testcsv.txt",
+            f"{modulespec['codeloc']}/testcsv.csv.txt"
+        ]:
+            verify_out.append((x, subprocess.run(f"grep -o -P ',' ../{x}  | wc -l",
+                                        cwd=codedirpath, shell=True,
+                                        text=True,
                                         timeout=timeout,
-                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.strip()))
     except subprocess.TimeoutExpired as e:
         logger.critical("MARKER ERROR - {} verification timed out!".format(targetfile))
 
@@ -95,12 +103,15 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
         # Wrap up
         if run_result.returncode != 0:
             logger.critical("{} errored! -1 point".format(targetfile))
-            logger.debug("Error:\n{}".format(run_result.stdout))
+            logger.critical("Error:\n{}".format(run_result.stdout))
             deductions["value"] += 1
             deductions["reasons"].append("run_error")
 
-        elif verify_out.stdout.strip() != "0" and verify_out_alt.stdout.strip() != "0":
+        elif all([v[1] != "0" for v in verify_out]):
+
             logger.warning("{} gave possibly incorrect output. -0.5 points".format(targetfile))
+
+            logger.debug("One of these should have been a 0 with no error:\n{}".format("\n".join([f'{v[0]}: {v[1]}' for v in verify_out])))
             deductions["value"] += 0.5
             deductions["reasons"].append("result_error")
 
@@ -108,10 +119,11 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
 
     # Cleanup
     for x in ["testcsv.csv", "testcsv.txt", "testcsv.csv.txt"]:
-        try:
-            os.remove(os.path.join(datadirpath, x))
-            logger.debug("Removed {}".format(os.path.join(datadirpath, x)))
-        except FileNotFoundError:
-            pass
+        for y in [datadirpath, resultsdirpath, codedirpath]:
+            try:
+                os.remove(os.path.join(y, x))
+                logger.debug("Removed {}".format(os.path.join(y, x)))
+            except FileNotFoundError:
+                pass
 
     return run_stdout, linter_result.stdout, deductions, other

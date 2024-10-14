@@ -44,7 +44,9 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
     # Run script
     starttime = datetime.now()
     try:
-        run_result = subprocess.run(f"bash {targetfile} {targetfile}", cwd=codedirpath, shell=True, text=True, timeout = timeout,
+        teststr = f"bash {targetfile} {targetfile}"
+        logger.info("Running {} using following command: {}".format(targetfile, teststr))
+        run_result = subprocess.run(teststr, cwd=codedirpath, shell=True, text=True, timeout = timeout,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except subprocess.TimeoutExpired as e:
         timedout = True
@@ -65,7 +67,7 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
     else:
         if run_result.returncode != 0:
             logger.critical("{} errored! -1 point".format(targetfile))
-            logger.debug("Error:\n{}".format(run_result.stdout))
+            logger.critical("Error:\n{}".format(run_result.stdout))
             deductions["value"] += 1
             deductions["reasons"].append("run_error")
         run_stdout = run_result.stdout

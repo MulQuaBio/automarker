@@ -44,14 +44,21 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     # Setup
-    _ = subprocess.run(f"echo '1\thello\tgoodbye\thmm\n5\t6\t7\t8' > ../{modulespec['dataloc']}/testtsv.tsv", cwd=codedirpath, shell=True,
+    _ = subprocess.run(f"echo '1\thello\tgoodbye\thmm\n5\t6\t7\t8' > ../{modulespec['dataloc']}/testtsv.tsv;cp ../{modulespec['dataloc']}/testtsv.tsv ../{modulespec['dataloc']}/testtsv.txt", cwd=codedirpath, shell=True,
                        text=True, timeout=timeout,
                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # Run script
     starttime = datetime.now()
     try:
         # run
-        run_result = subprocess.run(f"bash {targetfile} ../{modulespec['dataloc']}/testtsv.tsv", cwd=codedirpath, shell=True, text=True, timeout = timeout,
+        teststr = f"bash {targetfile} ../{modulespec['dataloc']}/testtsv.tsv"
+        logger.info("Running {} using following command: {}".format(targetfile, teststr))
+        run_result = subprocess.run(teststr, cwd=codedirpath, shell=True, text=True, timeout = timeout,
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        teststr = f"bash {targetfile} ../{modulespec['dataloc']}/testtsv.txt"
+        logger.info("Running {} alternately using following command: {}".format(targetfile, teststr))
+        run_result_2 = subprocess.run(teststr, cwd=codedirpath,
+                                    shell=True, text=True, timeout=timeout,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except subprocess.TimeoutExpired as e:
         timedout = True
@@ -72,14 +79,26 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
         #                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         # Using grep instead to verify number of tabs (should be 0)
-        verify_out = subprocess.run(f"grep -o -P '\t' ../{modulespec['dataloc']}/testtsv.csv  | wc -l", cwd=codedirpath, shell=True,
-                                    text=True,
-                                    timeout=timeout,
-                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        verify_out_alt = subprocess.run(f" grep -o -P '\t' ../{modulespec['dataloc']}/testtsv.tsv.csv  | wc -l", cwd=codedirpath,
-                                        shell=True, text=True,
-                                        timeout=timeout,
-                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        verify_out = []
+        for x in [
+            f"{modulespec['dataloc']}/testtsv.csv",
+            f"{modulespec['dataloc']}/testtsv.tsv.csv",
+            f"{modulespec['dataloc']}/testtsv.txt.csv",
+            f"{modulespec['resultsloc']}/testtsv.csv",
+            f"{modulespec['resultsloc']}/testtsv.tsv.csv",
+            f"{modulespec['resultsloc']}/testtsv.txt.csv",
+            f"{modulespec['codeloc']}/testtsv.csv",
+            f"{modulespec['codeloc']}/testtsv.tsv.csv",
+            f"{modulespec['codeloc']}/testtsv.txt.csv"
+
+        ]:
+            verify_out.append((x, subprocess.run(f"grep -o -P '\t' ../{x}  | wc -l",
+                                             cwd=codedirpath, shell=True,
+                                             text=True,
+                                             timeout=timeout,
+                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.strip()))
+
     except subprocess.TimeoutExpired as e:
         logger.critical("MARKER ERROR - {} verification timed out!".format(targetfile))
 
@@ -93,9 +112,9 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
         run_stdout = run_result.stdout.decode()
     else:
         # Wrap up
-        if run_result.returncode != 0:
+        if run_result.returncode != 0 and run_result_2.returncode != 0:
             logger.critical("{} errored! -1 point".format(targetfile))
-            logger.debug("Error:\n{}".format(run_result.stdout))
+            logger.critical("Error:\n{}\n\n{}".format(run_result.stdout, run_result_2.stdout))
             deductions["value"] += 1
             deductions["reasons"].append("run_error")
         # Evaluate veracity
@@ -105,19 +124,21 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
         #     logger.warning("{} gave possibly incorrect output. -0.5 points".format(targetfile))
         #     deductions["value"] += 0.5
         #     deductions["reasons"].append("result_error")
-        elif verify_out.stdout.strip() != "0" and verify_out_alt.stdout.strip() != "0":
+        elif all([v[1] != "0" for v in verify_out]):
             logger.warning("{} gave possibly incorrect output. -0.5 points".format(targetfile))
+            logger.debug("One of these should have been a 0 with no error:\n{}".format("\n".join([f'{v[0]}: {v[1]}' for v in verify_out])))
             deductions["value"] += 0.5
             deductions["reasons"].append("result_error")
 
-        run_stdout = run_result.stdout
+        run_stdout = "\n\n".join([run_result.stdout, run_result_2.stdout])
 
     # Cleanup
-    for x in ["testtsv.tsv", "testtsv.csv", "testtsv.tsv.csv"]:
-        try:
-            os.remove(os.path.join(datadirpath, x))
-            logger.debug("Removed {}".format(os.path.join(datadirpath, x)))
-        except FileNotFoundError:
-            pass
+    for x in ["testtsv.tsv", "testtsv.txt", "testtsv.csv", "testtsv.tsv.csv"]:
+        for y in [datadirpath, resultsdirpath, codedirpath]:
+            try:
+                os.remove(os.path.join(y, x))
+                logger.debug("Removed {}".format(os.path.join(y, x)))
+            except FileNotFoundError:
+                pass
 
     return run_stdout, linter_result.stdout, deductions, other

@@ -57,8 +57,10 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
     # Run script
     starttime = datetime.now()
     try:
+        teststr = f"bash {targetfile} {targetfile} {targetfile} ../{modulespec['dataloc']}/testout.demo"
+        logger.info("Running {} using following command: {}".format(targetfile, teststr))
         # Actually run script
-        run_result = subprocess.run(f"bash {targetfile} {targetfile} {targetfile} ../{modulespec['dataloc']}/testout.demo", cwd=codedirpath, shell=True, text=True, timeout = timeout,
+        run_result = subprocess.run(teststr, cwd=codedirpath, shell=True, text=True, timeout = timeout,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except subprocess.TimeoutExpired as e:
         timedout = True
@@ -74,11 +76,16 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
     logger.info("Ran {} in {}".format(targetfile, elapsed))
 
     # Veracity post-test
+    #
     final_wc = subprocess.run(f"wc -l < ../{modulespec['dataloc']}/testout.demo", cwd=codedirpath,
                               shell=True, text=True, timeout=timeout,
                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    final_lines = int(final_wc.stdout.strip())
-    logger.debug("{} lines in final.".format(final_lines))
+    final_lines = 0
+    try:
+        final_lines = int(final_wc.stdout.strip())
+        logger.debug("{} lines in final.".format(final_lines))
+    except ValueError:
+        logger.warning("Ouput file not found!")
 
     # Check error code
     if timedout:
@@ -86,7 +93,7 @@ def main(filelocation, targetfile,studentspec, modulespec, testspec):
     else:
         if run_result.returncode != 0:
             logger.critical("{} errored! -1 point".format(targetfile))
-            logger.debug("Error:\n{}".format(run_result.stdout))
+            logger.critical("Error:\n{}".format(run_result.stdout))
             deductions["value"] += 1
             deductions["reasons"].append("run_error")
 

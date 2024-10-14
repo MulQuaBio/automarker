@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import sys
+from logging import exception
 from pathlib import Path
 from datetime import datetime
 from pprint import pformat
@@ -350,7 +351,12 @@ def main(args):
                     logger.critical("CONFIG ERROR - test file '{}' not found! Skipping...".format(testspec['testfile']))
                     logger.critical("Expected based upon {}_config.json: \n    '{}': {}".format(modulespec['name'], targetfile, pformat(testspec)))
                     continue
-                runout, lintout, deductions, other = testmodule.main(args["fileloc"], targetfile, studentspec, modulespec, testspec)
+                try:
+                    runout, lintout, deductions, other = testmodule.main(args["fileloc"], targetfile, studentspec, modulespec, testspec)
+                except Exception as e:
+                    logger.debug("TEST ERROR")
+                    logger.debug(e, exc_info=True)
+                    raise
                 # Pack test results into module results dict
                 module_results_dict[targetfile] = {"stdout": runout, "linterout": lintout, "deductions": deductions, "other": other}
 
