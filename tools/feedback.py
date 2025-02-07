@@ -1,48 +1,82 @@
 """
-	Automated testing, logging (including feedback) on 
-	MQB computing practical work.  
+	Automated testing, logging (including feedback) on MQB computing practical
+	work.  
 
 	USAGE: 
 	
-	`python3 feedback.py StudentsFile RepoPath Week`
+	`python3 feedback.py StudentsFile RepoPath FileList`
 
 	or, if ready to git push: 
 	
-	`python3 feedback.py StudentsFile RepoPath Week --gitpush`
+	`python3 feedback.py StudentsFile RepoPath FileList --git_push`
 
-	example: `python3 feedback.py ~/Documents/Teaching/IC_CMEE/2020-21/Students/Students.csv ~/Documents/Teaching/IC_CMEE/2020-21/Coursework/StudentRepos Week1`
+	example: `python3 feedback.py
+	~/Documents/Teaching/IC_CMEE/2020-21/Students/Students.csv
+	~/Documents/Teaching/IC_CMEE/2020-21/Coursework/StudentRepos FileList`
 
 	ARGUMENTS: 
 
-	StudentsFile : FULL path to input file containing student data, 
-				   including git repo address
+	StudentsFile  : FULL path to input file containing student data, 
+	                including git repo address
 
-	RepoPath 	 : FULL path to location for students' local git       
-	               repositories (without an ending "/")
+	RepoPath      : FULL path to location for students' local git       
+	                repositories (without an ending "/")
 
-	Week		 : Name of week to test (Week1, Week2, 
-				   etc.) (case insensitive)
+	FileList      : FULL path to text file containing list of files to check for
+	                and test. If file is empty (allowed), all code/script files will be tested, and no feedback given on missing files.    
 
-    --gitpull 	 : Optional flag indicating whether to pull students' 
-				   git repositories only, without testing (default is False). Only works if the student's repo already exists
+    --git_pull     : Optional flag indicating whether to pull students' 
+	                git repositories only, without testing (default is False).
+	                Only works if the student's repo already exists
 
-	--gitpush	 : Optional flag indicating whether to push the testing results 
-				   to students' git repositories (default is False). If used contents of feedback directory are pushed, nothing else
+	--git_push     : Optional flag indicating whether to push the testing
+                    results to students' git repositories (default is False). If
+                    used contents of feedback directory are pushed, nothing else
 """
+
+	# You are an expert computer programmer.
+
+	# Based on the attached log files, provide detailed, constructive, feedback on the project structure & workflow (including the README file(s)), and code structure, syntax, and errors generated in each week.
+
+	# Include *every* code and script file tested in the weekly log files.
+
+	# Comment on improvements made by comparing each week's previous and new log file. 
+
+	# Comment on quality of formatting of the outputs of files. 
+
+	# Use past tense and personal speech.
+
+	# Provide separate feedback on code and latex report corresponding to the florida autocorrelation temperatures practical. 
+
+	# Structure feedback by week with a summary at the end .
+
+	# Provide feedback on git practices using the attached git log output, focusing on how much the student improved specific scripts across the weeks. Also comment on size of the git repo if its too large (binary files committed).
+
+	# Do not include an "Overview" section describing the document. 
+
+	# Include Student's name at the top of the file.
+
+	# Return the feedback as a markdown (*.md) file for download, naming it "Final_Assessment_" followed by student's first name.
+
+##################################
 
 # You are an expert computer programmer
 
-# Based on the attached log file, provide detailed, constructive, feedback on the project structure & workflow (including the README file(s)), and code structure &  syntax .
+# Based on the attached log file, provide detailed, constructive, feedback on the group project structure & workflow (including the README file(s)), and code structure, syntax, and errors generated.
 
 # Include every code and script file.
 
-# Include Student's name at the top of the file. 
+# Provide separate, specific feedback on the florida autocorrlation practical code and writeup with reference to practical brief: https://mulquabio.github.io/MQB/notebooks/R.html#groupwork-practical-autocorrelation-in-florida-weather.
 
-# Return the feedback as a separate markdown (*.md) file for download, prefixing "Feedback_" to original log file name.
+# Use past tense
+
+# Also provide feedback on git practices using the git log output included in the log file. Identify degree of contributions of the different team members.
+
+# Return the feedback as a markdown (*.md) file for download, prefixing group name and "Final_Assessment_and_" to original log file name.
 
 ################ Imports #####################
 
-import subprocess, os, csv, argparse, re, time, expected_files
+import subprocess, os, csv, argparse, re, time
 
 ################ Functions #####################
 def run_popen(command, timeout):
@@ -60,37 +94,41 @@ def run_popen(command, timeout):
 	except subprocess.TimeoutExpired:
 		p.kill()
 		stdout, stderr = p.communicate()
-	
+
 	end = time.time()
-	
+
 	return p, stdout.decode(), stderr.decode(), (end - start) # decode: binary --> string
 
-##################### Main Code #####################	
+##################### Main Code #####################
 
-# set up the argument parser 
+# set up the argument parser
 parser = argparse.ArgumentParser()
 
 # positional argument inputs
 parser.add_argument("StudentsFile", help="Input file containing student details (full path)")
 parser.add_argument("RepoPath", help="Location for git repositories (full path)")
-parser.add_argument("Week", help="Name of week to test (Week1, Week2, etc.)")
+parser.add_argument("FileList", help="Location of (text) file (full path) containing list of files to test")
+
+# expectedFiles = exp_files(args)  # Import list of expected files, on a per-week basis; not currently used 
 
 # Optional argument inputs
-parser.add_argument("--gitpull", action="store_true", 
-								 dest="gitpull", default=False,
-								 help="Whether to *only* git pull students' git repositories (no code testing) ")
+parser.add_argument("--git_pull", action="store_true", 
+								 dest="git_pull", default=False,
+								 help="Whether to *only* git pull students' repositories (no code testing) ")
 
-parser.add_argument("--gitpush", action="store_true", 
-								dest="gitpush", default=False,
-								help="Whether to *only* push tesing results to students' git repositories")
+parser.add_argument("--git_push", action="store_true", 
+								dest="git_push", default=False,
+								help="Whether to *only* git push testing results to students' repositories")
 
 args = parser.parse_args() 
-
-# expectedFiles = expected_files(args)  # Import list of expected files, on a per-week basis; not currently used 
 
 with open(args.StudentsFile,'r') as f: # Read in and store the student data
 	csvread = csv.reader(f)
 	Stdnts = [tuple(row) for row in csvread]
+
+with open(args.FileList,'r') as f: # Read in and store the file list
+	csvread = csv.reader(f)
+	ExpFiles = [tuple(row) for row in csvread]
 
 Hdrs = Stdnts[0] #store headers
 Stdnts.remove(Hdrs) #remove header row 
@@ -100,12 +138,12 @@ timeout = 10 #set time out for each script's run (integer seconds)
 charLim = 500 #set limit to output of each script's run to be printed
 
 for Stdnt in Stdnts:
-	# import ipdb; ipdb.set_trace()
+
 	Name = (Stdnt[Hdrs.index('first_name')] + Stdnt[Hdrs.index('second_name')]+ '_' + Stdnt[Hdrs.index('username')]).replace(" ","").replace("'","") #Remove any spaces from name
 	RepoPath = args.RepoPath + '/' + Name
 	AzzPath = RepoPath + '/Feedback'
 	
-	if args.gitpush:
+	if args.git_push:
 		
 		print("...\n\n" + "Git pushing testing results for " + Stdnt[Hdrs.index('first_name')] + " "+ Stdnt[Hdrs.index('second_name')] + "...\n\n")
 
@@ -121,7 +159,7 @@ for Stdnt in Stdnts:
 
 		continue
 
-	if args.gitpull:
+	if args.git_pull:
 		print("...\n\n"+"Pulling repository for "+ Stdnt[Hdrs.index('first_name')] + " "+ Stdnt[Hdrs.index('second_name')] + "...\n\n")		
 		if os.path.exists(RepoPath): # only if the repo exists already
 
@@ -142,7 +180,7 @@ for Stdnt in Stdnts:
 		subprocess.check_output(["git","clone", Stdnt[Hdrs.index('git_repo')], RepoPath])
 
 		continue
-	
+
 	else:
 
 		subprocess.check_output(["git","-C", RepoPath,"pull"])
@@ -160,11 +198,12 @@ for Stdnt in Stdnts:
 
 	#~ Open testing / feedback log file:
 
-	azzFileName = args.Week + '_' + 'log' + '_' + time.strftime("%Y%m%d") + '.txt'
-	azz = open(AzzPath + '/'+ azzFileName,'w+')
-	print('='*70 + '\n' + 'Starting testing for '+ Stdnt[Hdrs.index('first_name')] + ' ' + Stdnt[Hdrs.index('second_name')]+ ', ' + args.Week +'\n' + '='*70 + '\n\n')
+	azzFileName = 'log' + '_' + time.strftime("%Y%m%d") + '.txt'
+	azz = open(AzzPath + '/'+ azzFileName, 'w+')
 
-	azz.write('Starting testing for '+ Stdnt[Hdrs.index('first_name')] + ', ' + args.Week +'\n\n')
+	print('='*70 + '\n' + 'Starting testing for '+ Stdnt[Hdrs.index('first_name')] + ' ' + Stdnt[Hdrs.index('second_name')] +'\n' + '='*70 + '\n\n')
+
+	azz.write('Starting testing for '+ Stdnt[Hdrs.index('first_name')] + ' ' + Stdnt[Hdrs.index('second_name')] + '\n\n')
 	azz.write('Note that: \n')
 	azz.write('(1) Major sections begin with a double "====" line \n')
 	azz.write('(2) Subsections begin with a single "====" line \n')
@@ -174,15 +213,15 @@ for Stdnt in Stdnts:
 	azz.write('='*70 + '\n')
 	azz.write('='*70 + '\n')
 
-	azz.write('Your Git repo size this week is about ' + RepoStats['size-pack'] +' on disk \n\n')
+	azz.write('Your current Git repo size is about ' + RepoStats['size-pack'] +' on disk \n\n')
 
 	azz.write('PART 1: Checking project workflow...\n\n')
 	DirCont = os.listdir(RepoPath)
 	TempDirs = [name for name in DirCont if os.path.isdir(RepoPath+'/' + name)]
 	TempFiles = [name for name in DirCont if os.path.isfile(RepoPath+'/' + name)]
-	azz.write('Found the following directories in parent directory: '\
+	azz.write('Found the following directories in root directory of repo: '\
 	 + ', '.join(TempDirs) + '\n\n')
-	azz.write('Found the following files in parent directory: '\
+	azz.write('Found the following files in root directory of repo: '\
 	 + ', '.join(TempFiles) + '\n\n')
 
 	#~ Begin testing and logging:
@@ -213,189 +252,155 @@ for Stdnt in Stdnts:
 	if readme == 'n':
 		azz.write('README file missing!\n\n')
 		
-	azz.write('='*70 + '\n')
-	azz.write('Looking for the weekly directories...' + '\n\n') 
-
-	WeekDirs = [name for name in TempDirs if 'week' in name.lower()]
-	
-	WeekDirs.sort()
-
-	if not WeekDirs: #If weekly directories were missing
-		azz.write('Weekly directories missing, proceeding with testing anyway!\n\n')
-		import ipdb; ipdb.set_trace()
-		azz.close()
-		continue
-	else:
-		azz.write('Found '+ str(len(WeekDirs)) +\
-		' weekly directories: ' + ', '.join(WeekDirs) + '\n\n')
-		azz.write('The '+ args.Week +' directory will be tested \n\n')
-
 	####################################################
 	azz.write('='*70 + '\n')
 	azz.write('='*70 + '\n')
-	azz.write('PART 2: Checking weekly code and workflow...\n\n')
-	
-	for week in WeekDirs:
-		if not args.Week.lower() in week.lower().replace(" ", ""):
-			continue # only test for current week - no week 10 and 1, for eg
-		azz.write('='*70 + '\n')
-		WeekPth = RepoPath+'/'+week
-		azz.write('Testing ' + week.upper()+'...\n\n')
-		DirCont = os.listdir(WeekPth)
-		TempDirs = [name for name in DirCont if os.path.isdir(WeekPth +'/' + name)]
-		TempFiles = [name for name in DirCont if os.path.isfile(WeekPth +'/' + name)]
-		azz.write('Found the following directories: '\
-		 + ', '.join(TempDirs) + '\n\n')
-		azz.write('Found the following files: '\
-		 + ', '.join(TempFiles) + '\n\n')
-		 
-		azz.write('Checking for readme file in weekly directory...\n\n')
-		readme = 'n'
-		for name in TempFiles:
-			if 'readme' in name.lower() and not '~' in name.lower():
-				azz.write('Found README in parent directory, named: ' + name + '\n\n')
-				azz.write('Printing contents of ' + name + ':' + '\n')
-				g = open(WeekPth + '/' + name, 'r')
-				azz.write('\n' + '*'*70 + '\n')
-				for line in g:
-					azz.write(line,)
-				g.close()
-				azz.write('\n' + '*'*70 + '\n\n')
-				readme = 'y'
-				break
-		if readme == 'n':
-			azz.write('README file missing!\n\n')
-		
-		CodDir = [name for name in TempDirs if 'code' in name.lower()]
-		DatDir = [name for name in TempDirs if 'data' in name.lower()]
-		ResDir = [name for name in TempDirs if 'result' in name.lower()]
-		if not CodDir: 
-			azz.write('Code directory missing!\n')
-			azz.write('Aborting this weeks testing!\n\n')
-			break
+	azz.write('PART 2: Checking code and workflow...\n\n')	
+	azz.write('='*70 + '\n')
 
-		if not DatDir: azz.write('Data directory missing!\n\n')
+	CodDir = [name for name in TempDirs if 'code' in name.lower()]
+	DatDir = [name for name in TempDirs if 'data' in name.lower()]
+	ResDir = [name for name in TempDirs if 'result' in name.lower()]
+	if not CodDir:
+		azz.write('Code directory missing!\n')
+		azz.write('Aborting this weeks testing!\n\n')
+		break
 
-		if not ResDir: 
-			azz.write('Results directory missing!\n\n')
-			azz.write('Creating Results directory...\n\n')
-			os.makedirs(WeekPth+'/Results')
-		else:
-			ResNames = []
-			for root, dirs, files in os.walk(WeekPth + '/' + ResDir[0]):
-				for file in files:
-					if not file.startswith("."):
-						ResNames.append(file)
-			if len(ResNames)>0:
-					azz.write('Found following files in results directory: ' + ', '.join(ResNames) + '...\n\n')					
-					azz.write('Ideally, Results directory should be empty other than, perhaps a .gitkeep. \n\n')
-			else: 
-				azz.write('Results directory is empty - good! \n\n')		
-		
-		## Now get all code file paths for testing
-		Scripts = []
-		ScriptNames = []
-		for root, dirs, files in os.walk(WeekPth + '/' + CodDir[0]):
+	if not DatDir: azz.write('Data directory missing!\n\n')
+
+	if not ResDir: 
+		azz.write('Results directory missing!\n\n')
+		azz.write('Creating Results directory...\n\n')
+		os.makedirs(RepoPath+'/Results')
+	else:
+		ResNames = []
+		for root, dirs, files in os.walk(RepoPath + '/' + ResDir[0]):
 			for file in files:
-				
-				if file.lower().endswith(('.sh','.py','.ipynb','.r','.txt','.bib','.tex')) and not file.startswith(".") :
-					Scripts.append(os.path.join(root, file))
-					ScriptNames.append(file) 
+				if not file.startswith("."):
+					ResNames.append(file)
+		if len(ResNames)>0:
+			azz.write('Found following files in results directory: ' + ', '.join(ResNames) + '...\n\n')			
+			azz.write('Ideally, Results directory should be empty other than, perhaps a .gitkeep. \n\n')
+		else:
+			azz.write('Results directory is empty - good! \n\n')
 
-		azz.write('Found ' + str(len(Scripts)) + ' code files: ' + ', '.join(ScriptNames) + '\n\n')
+	## Now get all code file paths for testing
+	Scripts = []
+	ScriptNames = []
+	for root, dirs, files in os.walk(RepoPath + '/' + CodDir[0]):
+		for file in files:
+			
+			if file.lower().endswith(('.sh','.py','.ipynb','.r','.txt','.bib','.tex')) and not file.startswith(".") :
+				Scripts.append(os.path.join(root, file))
+				ScriptNames.append(file)
 
-		files = [fname for fname in files if not fname.startswith(".")] # all files except hidden/ghost files
-		if len(ScriptNames) < len(files):
-			extras = list(set(files) - set(ScriptNames))
-			# extras = [name for name in extras if not (name.lower().endswith(('~', 'pyc')))] #ignore certain extensions
-			azz.write('Found the following extra files: ' + ', '.join(extras) + '\n')
+	azz.write('Found ' + str(len(Scripts)) + ' code files: ' + ', '.join(ScriptNames) + '\n\n')
 
-		## Now test all valid script files that were found
+	files = [fname for fname in files if not fname.startswith(".")] # all files except hidden/ghost files
+	if len(ScriptNames) < len(files):
+		extras = list(set(files) - set(ScriptNames))
+		azz.write('Found the following extra (non-code/script) files: ' + ', '.join(extras) + '\n')
+
+	if len(ExpFiles) > 0: # Check if list of expected files was provided
+		missing_files = [name for name in ExpFiles if name not in ScriptNames]# Find missing file names
+		if len(missing_files) > 0:
+			azz.write('The following ' + ({len(missing_files)}) +' files are missing: ' + ', '.join(ResNames) + '...\n\n')
+		else: azz.write('All expected code/script files found - good! \n\n')
+
+	## Now test all valid script files that were found
+	azz.write('='*70 + '\n')
+	azz.write('Testing script/code files...\n\n')
+	
+	errors = 0 #error counter
+	for name in Scripts:
+		## cd to current script's directory
+		os.chdir(os.path.dirname(name))							
 		azz.write('='*70 + '\n')
-		azz.write('Testing script/code files...\n\n')
-		
-		errors = 0 #error counter
-		for name in Scripts:
-			## cd to current script's directory
-			os.chdir(os.path.dirname(name))								
-			azz.write('='*70 + '\n')
-			azz.write('Inspecting script file ' + os.path.basename(name) + '...\n\n')
-			azz.write('File contents are:\n')
-			azz.write('\n' + '*'*70 + '\n')
-						
-			g = open(os.path.basename(name), 'r')
-			for line in g:
-				azz.write(line,)
-			g.close()
-			azz.write('\n' + '*'*70 + '\n\n')
-
-			azz.write('Testing ' + os.path.basename(name) + '...\n\n')
-			print('Testing ' + os.path.basename(name) + '...\n\n')
-						
-			if os.path.basename(name).lower().endswith('.sh'):
-				p, output, err, time_used = run_popen('bash ' + os.path.basename(name), timeout)
-			elif os.path.basename(name).lower().endswith('.py'):
-				azz.write(os.path.basename(name) + ' is a Python script file;\n\nchecking for docstrings...\n\n')
-				with open(os.path.basename(name)) as f:
-					funcs = re.findall(r'def\s.+:',f.read(),re.MULTILINE)
-				with open(os.path.basename(name)) as f:
-					dstrngs = re.findall(r'"""[\w\W]*?"""',f.read(),re.MULTILINE)
+		azz.write('Inspecting script file ' + os.path.basename(name) + '...\n\n')
+		azz.write('File contents are:\n')
+		azz.write('\n' + '*'*70 + '\n')
 					
-					if len(funcs)>0 and len(dstrngs)>0:
-						azz.write('Found one or more docstrings and functions\n\n')
-						if len(dstrngs) < len(funcs) + 1:
-							azz.write('Missing docstring, either in one or functions and/or at the script level\n')
-							azz.write('\n')
-					elif len(funcs)>0 and len(dstrngs)==0:
-						azz.write('Found one or more functions, but completely missing docstrings\n')
-					elif len(funcs)==0 and len(dstrngs)==1:
-						azz.write('Found no functions, but one docstring for the script, good\n\n')
-					elif len(funcs)==0 and len(dstrngs)>2:
-						azz.write('Found too many docstrings.  Check your script.\n\n')
-					else:
-						azz.write('No functions, but no script-level docstring either\n')
+		g = open(os.path.basename(name), 'r')
+		for line in g:
+			azz.write(line,)
+		g.close()
+		azz.write('\n' + '*'*70 + '\n\n')
 
-				p, output, err,	time_used = run_popen('python3 ' + os.path.basename(name), timeout)
-			
-			elif os.path.basename(name).lower().endswith('.r'):
-				p, output, err,	time_used = run_popen('/usr/lib/R/bin/Rscript ' + os.path.basename(name), timeout)
-			else:
-				os.chdir(scrptPath)
-				continue
-
-			chars = 0
-						
-			azz.write('Output (only first ' + str(charLim) + ' characters): \n\n')
-			azz.write('\n' + '*'*70 + '\n')			 
-			for char in output:
-				print(char), # use end = '' to removes extra newline in python 3.xx
-				subprocess.sys.stdout.flush()
-				azz.write(char,)
-				chars += 1
-				if chars > charLim: # Limit the amount of output
-					break
-			
-			azz.write('\n' + '*'*70 + '\n')
-			if not err:
-				azz.write('\nCode ran without errors\n\n')
-				azz.write('Time consumed = ' +"{:.5f}".format(time_used)+ 's\n\n')
-			else:
-				errors += 1
-				azz.write('\nEncountered error (or warning):\n')
-				azz.write('\n***IGNORE IF THIS ERROR IS EXPECTED AS PART OF AN IN-CLASS EXERCISE***\n\n')
-				azz.write(err)
-				azz.write('\n')
-			
-			print('\nFinished with ' + os.path.basename(name)+  '\n\n')
-			os.chdir(scrptPath)
+		azz.write('Testing ' + os.path.basename(name) + '...\n\n')
+		print('Testing ' + os.path.basename(name) + '...\n\n')
+					
+		if os.path.basename(name).lower().endswith('.sh'):
+			p, output, err, time_used = run_popen('bash ' + os.path.basename(name), timeout)
+		elif os.path.basename(name).lower().endswith('.py'):
+			azz.write(os.path.basename(name) + ' is a Python script file;\n\nchecking for docstrings...\n\n')
+			with open(os.path.basename(name)) as f:
+				funcs = re.findall(r'def\s.+:',f.read(),re.MULTILINE)
+			with open(os.path.basename(name)) as f:
+				dstrngs = re.findall(r'"""[\w\W]*?"""',f.read(),re.MULTILINE)
 				
-		azz.write('='*70 + '\n')
-		azz.write('='*70 + '\n')
-		azz.write('Finished running scripts\n\n')
-		azz.write('Ran into ' + str(errors)+' errors\n\n')
+				if len(funcs)>0 and len(dstrngs)>0:
+					azz.write('Found one or more docstrings and functions\n\n')
+					if len(dstrngs) < len(funcs) + 1:
+						azz.write('Missing docstring, either in one or functions and/or at the script level\n')
+						azz.write('\n')
+				elif len(funcs)>0 and len(dstrngs)==0:
+					azz.write('Found one or more functions, but completely missing docstrings\n')
+				elif len(funcs)==0 and len(dstrngs)==1:
+					azz.write('Found no functions, but one docstring for the script, good\n\n')
+				elif len(funcs)==0 and len(dstrngs)>2:
+					azz.write('Found too many docstrings.  Check your script.\n\n')
+				else:
+					azz.write('No functions, but no script-level docstring either\n')
+
+			p, output, err,	time_used = run_popen('python3 ' + os.path.basename(name), timeout)
+		
+		elif os.path.basename(name).lower().endswith('.r'):
+			p, output, err,	time_used = run_popen('/usr/lib/R/bin/Rscript ' + os.path.basename(name), timeout)
+		else:
+			os.chdir(scrptPath)
+			continue
+
+		chars = 0
+					
+		azz.write('Output (only first ' + str(charLim) + ' characters): \n\n')
+		azz.write('\n' + '*'*70 + '\n')			 
+		for char in output:
+			print(char), # use end = '' to removes extra newline in python 3.xx
+			subprocess.sys.stdout.flush()
+			azz.write(char,)
+			chars += 1
+			if chars > charLim: # Limit the amount of output
+				break
+		
+		azz.write('\n' + '*'*70 + '\n')
+		if not err:
+			azz.write('\nCode ran without errors\n\n')
+			azz.write('Time consumed = ' +"{:.5f}".format(time_used)+ 's\n\n')
+		else:
+			errors += 1
+			azz.write('\nEncountered error (or warning):\n')
+			azz.write('\n***IGNORE IF THIS ERROR IS EXPECTED AS PART OF AN IN-CLASS EXERCISE***\n\n')
+			azz.write(err)
+			azz.write('\n')
+		
+		print('\nFinished with ' + os.path.basename(name)+  '\n\n')
+		os.chdir(scrptPath)
+			
+	azz.write('='*70 + '\n')
+	azz.write('='*70 + '\n')
+	azz.write('Finished running scripts\n\n')
+	azz.write('Ran into ' + str(errors)+' errors\n\n')
 	
 	azz.write('='*70 + '\n')
 	azz.write('='*70 + '\n')
+
+	azz.write('Finally, checking git log:\n\n')
+
+	# import ipdb; ipdb.set_trace()
+	output = subprocess.check_output(["git","-C", RepoPath, "log"], text=True)
+
+	azz.write(output)
+
 	azz.write('\nFINISHED LOGGING\n\n')
-	
+
 	azz.close()
